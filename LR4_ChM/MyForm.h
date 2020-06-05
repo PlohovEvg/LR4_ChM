@@ -319,7 +319,7 @@ namespace LR4_ChM {
 			// 
 			// textBox3
 			// 
-			this->textBox3->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 14.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+			this->textBox3->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(204)));
 			this->textBox3->Location = System::Drawing::Point(8, 230);
 			this->textBox3->Multiline = true;
@@ -827,8 +827,13 @@ private: System::Void button1_Click(System::Object^  sender, System::EventArgs^ 
 	double MaxPogr = 0.0;
 	double Pogr;
 	double MaxF = 0.0;
-	double R1, maxR1 = 0.0;
+	double R1, maxR1 = 0.0;	
 	string ref = "";
+
+	double lambda1 = (4 * h2)*pow(sin(M_PI / (2 * n)), 2) + (4 * k2)*pow(sin(M_PI / (2 * m)), 2);
+	double lambdaN = (4 * h2)*pow(sin(M_PI*(n - 1) / (2 * n)), 2) + (4 * k2)*pow(sin(M_PI*(m - 1) / (2 * m)), 2);
+
+	double mu = lambdaN / lambda1;
 
 	x = new double[n + 1];
 	y = new double[m + 1];
@@ -861,12 +866,11 @@ private: System::Void button1_Click(System::Object^  sender, System::EventArgs^ 
 		{
 			f[i][j] = f1(x[i], y[j]);			
 			u[i][j] = u1(x[i], y[j]);			
-			if (abs(f[i][j]) > MaxF)
-			{
-				MaxF = abs(f[i][j]);
-			}
+			MaxF += f[i][j] * f[i][j];
 		}
 	}
+
+	MaxF = sqrt(MaxF);
 
 	for (int j = 0; j <= m; j++)  //Заполнение граничных условий в массив v
 	{
@@ -889,7 +893,7 @@ private: System::Void button1_Click(System::Object^  sender, System::EventArgs^ 
 			v[i][j] = vpreviter[i][j] = 0.0;
 		}
 	}
-	tau = 2 / ((4 * h2)*(pow(sin(M_PI / (2 * n)), 2) + pow(sin((M_PI*(n - 1)) / (2 * n)), 2)) + (4 * k2)*(pow(sin(M_PI / (2 * m)), 2) + pow(sin((M_PI*(m - 1)) / (2 * m)), 2))); //Вычисление оптимального параметра
+	tau = 2 / (lambda1 + lambdaN); //Вычисление оптимального параметра
 
 	while (flag == false)       //Метод простой итерации
 	{
@@ -924,10 +928,7 @@ private: System::Void button1_Click(System::Object^  sender, System::EventArgs^ 
 
 				v_new = v[i][j] + tau*R1;
 
-				if (abs(R1) > maxR1)
-				{
-					maxR1 = abs(R1);
-				}
+				maxR1 += R1*R1;
 
 				if (abs(v_old - v_new) > Eps_max)
 				{
@@ -949,6 +950,8 @@ private: System::Void button1_Click(System::Object^  sender, System::EventArgs^ 
 			flag = true;
 		}		
 	}
+
+	maxR1 = sqrt(maxR1);	
 
 	dataGridView1->Rows->Clear();               //Очистка таблиц от предыдущих значений
 	dataGridView1->Columns->Clear();
@@ -1066,11 +1069,11 @@ private: System::Void button1_Click(System::Object^  sender, System::EventArgs^ 
 	ref += "\r\n";
 	ref += "Используется нулевое начальное приближение";
 	ref += "\r\n";
-	ref += "Невязка СЛАУ на начальном приближении (максимальная по модулю) R(0)=";
+	ref += "Невязка СЛАУ на начальном приближении (евклидова норма) R(0)=";
 	sprintf_s(buffer, "%.3e", MaxF);
 	ref += buffer;
 	ref += "\r\n";
-	ref += "Схема на сетке решена с невязкой (максимальная по модулю) R(p)=";
+	ref += "Схема на сетке решена с невязкой (евклидова норма) R(p)=";
 	sprintf_s(buffer, "%.3e", maxR1);
 	ref += buffer;
 
@@ -1112,6 +1115,9 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 	double R1, maxR1 = 0.0;
 	string ref = "";
 
+	double lambda1 = (4 * h2)*pow(sin(M_PI / (2 * n)), 2) + (4 * k2)*pow(sin(M_PI / (2 * m)), 2);
+	double lambdaN = (4 * h2)*pow(sin(M_PI*(n - 1) / (2 * n)), 2) + (4 * k2)*pow(sin(M_PI*(m - 1) / (2 * m)), 2);
+
 	x = new double[n + 1];
 	y = new double[m + 1];
 	v = new double*[n + 1];	
@@ -1141,12 +1147,10 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 		for (int i = 0; i <= n; i++)
 		{
 			f[i][j] = f2(x[i], y[j]);			
-			if (abs(f[i][j]) > MaxF)
-			{
-				MaxF = abs(f[i][j]);
-			}
+			MaxF += f[i][j]*f[i][j];
 		}
 	}
+	MaxF = sqrt(MaxF);
 
 	for (int j = 0; j <= m; j++)  //Заполнение граничных условий в массив v
 	{
@@ -1169,7 +1173,7 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 			v[i][j] = vpreviter[i][j] = 0.0;
 		}
 	}
-	tau = 2 / ((4 * h2)*(pow(sin(M_PI / (2 * n)), 2) + pow(sin((M_PI*(n - 1)) / (2 * n)), 2)) + (4 * k2)*(pow(sin(M_PI / (2 * m)), 2) + pow(sin((M_PI*(m - 1)) / (2 * m)), 2))); //Вычисление оптимального параметра
+	tau = 2 / (lambda1 + lambdaN); //Вычисление оптимального параметра
 
 	while (flag == false)       //Метод простой итерации
 	{
@@ -1204,10 +1208,7 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 
 				v_new = v[i][j] + tau*R1;
 
-				if (abs(R1) > maxR1)
-				{
-					maxR1 = abs(R1);
-				}
+				maxR1 += R1*R1;
 
 				if (abs(v_old - v_new) > Eps_max)
 				{
@@ -1229,6 +1230,8 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 			flag = true;
 		}
 	}
+
+	maxR1 = sqrt(maxR1);
 
 	for (int i = 0; i <= n; i++)
 	{
@@ -1252,6 +1255,9 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 	h2 = 1.0 / (h*h);
 	k2 = 1.0 / (k*k);
 	A = -2 * (h2 + k2);
+
+    lambda1 = (4 * h2)*pow(sin(M_PI / (2 * n)), 2) + (4 * k2)*pow(sin(M_PI / (2 * m)), 2);
+	lambdaN = (4 * h2)*pow(sin(M_PI*(n - 1) / (2 * n)), 2) + (4 * k2)*pow(sin(M_PI*(m - 1) / (2 * m)), 2);
 
 	double R;
 	double maxR = 0.0;
@@ -1278,12 +1284,11 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 		for (int i = 0; i <= n; i++)
 		{
 			f[i][j] = f2(x[i], y[j]);
-			if (abs(f[i][j]) > MaxF2)
-			{
-				MaxF2 = f[i][j];
-			}
+			MaxF2 += f[i][j] * f[i][j];
 		}
 	}
+
+	MaxF2 = sqrt(MaxF2);
 
 	for (int j = 0; j <= m; j++)  //Заполнение граничных условий в массив v
 	{
@@ -1306,7 +1311,7 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 			v2[i][j] = vpreviter2[i][j] = 0.0;
 		}
 	}
-	tau2 = 2 / ((4 * h2)*(pow(sin(M_PI / (2 * n)), 2) + pow(sin((M_PI*(n - 1)) / (2 * n)), 2)) + (4 * k2)*(pow(sin(M_PI / (2 * m)), 2) + pow(sin((M_PI*(m - 1)) / (2 * m)), 2))); //Вычисление оптимального параметра
+	tau2 = 2 / (lambda1 + lambdaN); //Вычисление оптимального параметра
 
 	while (flag == false)       //Метод простой итерации
 	{
@@ -1341,10 +1346,7 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 
 				v_new = v2[i][j] + tau2*R;
 
-				if (abs(R) > maxR)
-				{
-					maxR = abs(R);
-				}
+				maxR += R*R;
 
 				if (abs(v_old - v_new) > Eps_max2)
 				{
@@ -1366,6 +1368,8 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 			flag = true;
 		}
 	}
+
+	maxR = sqrt(maxR);
 
 	n = n / 2;
 	m = m / 2;
@@ -1483,11 +1487,11 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 	ref += "\r\n";
 	ref += "Используется нулевое начальное приближение";
 	ref += "\r\n";
-	ref += "Невязка СЛАУ на начальном приближении (максимальная по модулю) R(0)=";
+	ref += "Невязка СЛАУ на начальном приближении (евклидова норма) R(0)=";
 	sprintf_s(buffer, "%.3e", MaxF);
 	ref += buffer;
 	ref += "\r\n";
-	ref += "Схема на сетке решена с невязкой (максимальная по модулю) R(p)=";
+	ref += "Схема на сетке решена с невязкой (евклидова норма) R(p)=";
 	sprintf_s(buffer, "%.3e", maxR1);
 	ref += buffer;
 	ref += "\r\n";
@@ -1506,11 +1510,11 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 	ref += "\r\n";	
 	ref += "Используется нулевое начальное приближение";
 	ref += "\r\n";
-	ref += "Невязка СЛАУ на начальном приближении (максимальная по модулю) R2(0)=";
+	ref += "Невязка СЛАУ на начальном приближении (евклидова норма) R2(0)=";
 	sprintf_s(buffer, "%.3e", MaxF2);
 	ref += buffer;
 	ref += "\r\n";
-	ref += "Схема на сетке с половинным шагом решена с невязкой (максимальная по модулю)\r\n R(p2)=";
+	ref += "Схема на сетке с половинным шагом решена с невязкой (евклидова норма) R(p2)=";
 	sprintf_s(buffer, "%.3e", maxR);
 	ref += buffer;
 	ref += "\r\n";		
