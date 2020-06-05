@@ -827,6 +827,7 @@ private: System::Void button1_Click(System::Object^  sender, System::EventArgs^ 
 	double MaxPogr = 0.0;
 	double Pogr;
 	double MaxF = 0.0;
+	double R1, maxR1 = 0.0;
 	string ref = "";
 
 	x = new double[n + 1];
@@ -902,24 +903,32 @@ private: System::Void button1_Click(System::Object^  sender, System::EventArgs^ 
 				{
 					if (j - 1 == 0)
 					{
-						v_new = v[i][j] * (1 + tau*A) + tau*(f[i][j] + h2*(v[i + 1][j] + v[i - 1][j]) + k2*(v[i][j + 1] + v[i][j - 1]));
+						R1 = A*v[i][j] + f[i][j] + h2*(v[i + 1][j] + v[i - 1][j]) + k2*(v[i][j + 1] + v[i][j - 1]);
 					}
 					else
 					{
-						v_new = v[i][j] * (1 + tau*A) + tau*(f[i][j] + h2*(v[i + 1][j] + v[i - 1][j]) + k2*(v[i][j + 1] + vpreviter[i][j - 1]));
+						R1 = A*v[i][j] + f[i][j] + h2*(v[i + 1][j] + v[i - 1][j]) + k2*(v[i][j + 1] + vpreviter[i][j - 1]);
 					}
 				}
 				else
 				{
 					if (j - 1 == 0)
 					{
-						v_new = v[i][j] * (1 + tau*A) + tau*(f[i][j] + h2*(v[i + 1][j] + vpreviter[i - 1][j]) + k2*(v[i][j + 1] + v[i][j - 1]));
+						R1 = A*v[i][j] + f[i][j] + h2*(v[i + 1][j] + vpreviter[i - 1][j]) + k2*(v[i][j + 1] + v[i][j - 1]);
 					}
 					else
 					{
-						v_new = v[i][j] * (1 + tau*A) + tau*(f[i][j] + h2*(v[i + 1][j] + vpreviter[i - 1][j]) + k2*(v[i][j + 1] + vpreviter[i][j - 1]));
+						R1 = A*v[i][j] + f[i][j] + h2*(v[i + 1][j] + vpreviter[i - 1][j]) + k2*(v[i][j + 1] + vpreviter[i][j - 1]);
 					}
-				}				
+				}
+
+				v_new = v[i][j] + tau*R1;
+
+				if (abs(R1) > maxR1)
+				{
+					maxR1 = abs(R1);
+				}
+
 				if (abs(v_old - v_new) > Eps_max)
 				{
 					Eps_max = abs(v_old - v_new);
@@ -1060,6 +1069,10 @@ private: System::Void button1_Click(System::Object^  sender, System::EventArgs^ 
 	ref += "Невязка СЛАУ на начальном приближении (максимальная по модулю) R(0)=";
 	sprintf_s(buffer, "%.3e", MaxF);
 	ref += buffer;
+	ref += "\r\n";
+	ref += "Схема на сетке решена с невязкой (максимальная по модулю) R(p)=";
+	sprintf_s(buffer, "%.3e", maxR1);
+	ref += buffer;
 
 	textBox3->Text = gcnew String(ref.c_str());
 
@@ -1096,6 +1109,7 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 	double xMax;
 	double yMax;
 	double MaxF = 0.0, MaxF2 = 0.0;
+	double R1, maxR1 = 0.0;
 	string ref = "";
 
 	x = new double[n + 1];
@@ -1169,24 +1183,32 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 				{
 					if (j - 1 == 0)
 					{
-						v_new = v[i][j] * (1 + tau*A) + tau*(f[i][j] + h2*(v[i + 1][j] + v[i - 1][j]) + k2*(v[i][j + 1] + v[i][j - 1]));
+						R1 = A*v[i][j] + f[i][j] + h2*(v[i + 1][j] + v[i - 1][j]) + k2*(v[i][j + 1] + v[i][j - 1]);
 					}
 					else
 					{
-						v_new = v[i][j] * (1 + tau*A) + tau*(f[i][j] + h2*(v[i + 1][j] + v[i - 1][j]) + k2*(v[i][j + 1] + vpreviter[i][j - 1]));
+						R1 = A*v[i][j] + f[i][j] + h2*(v[i + 1][j] + v[i - 1][j]) + k2*(v[i][j + 1] + vpreviter[i][j - 1]);
 					}
 				}
 				else
 				{
 					if (j - 1 == 0)
 					{
-						v_new = v[i][j] * (1 + tau*A) + tau*(f[i][j] + h2*(v[i + 1][j] + vpreviter[i - 1][j]) + k2*(v[i][j + 1] + v[i][j - 1]));
+						R1 = A*v[i][j] + f[i][j] + h2*(v[i + 1][j] + vpreviter[i - 1][j]) + k2*(v[i][j + 1] + v[i][j - 1]);
 					}
 					else
 					{
-						v_new = v[i][j] * (1 + tau*A) + tau*(f[i][j] + h2*(v[i + 1][j] + vpreviter[i - 1][j]) + k2*(v[i][j + 1] + vpreviter[i][j - 1]));
+						R1 = A*v[i][j] + f[i][j] + h2*(v[i + 1][j] + vpreviter[i - 1][j]) + k2*(v[i][j + 1] + vpreviter[i][j - 1]);
 					}
 				}
+
+				v_new = v[i][j] + tau*R1;
+
+				if (abs(R1) > maxR1)
+				{
+					maxR1 = abs(R1);
+				}
+
 				if (abs(v_old - v_new) > Eps_max)
 				{
 					Eps_max = abs(v_old - v_new);
@@ -1232,7 +1254,7 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 	A = -2 * (h2 + k2);
 
 	double R;
-	double maxR;
+	double maxR = 0.0;
 
 	for (int i = 0; i <= n; i++)
 	{
@@ -1463,6 +1485,10 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 	ref += "\r\n";
 	ref += "Невязка СЛАУ на начальном приближении (максимальная по модулю) R(0)=";
 	sprintf_s(buffer, "%.3e", MaxF);
+	ref += buffer;
+	ref += "\r\n";
+	ref += "Схема на сетке решена с невязкой (максимальная по модулю) R(p)=";
+	sprintf_s(buffer, "%.3e", maxR1);
 	ref += buffer;
 	ref += "\r\n";
 	ref += "\r\n";
